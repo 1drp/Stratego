@@ -46,6 +46,8 @@ void newLocal()
 		board.pieceMove(turn);
 
 		winner = board.gameOver();
+
+		turn = !turn;
 	}
 
 	if(winner == 0) {

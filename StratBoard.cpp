@@ -57,9 +57,13 @@ StratBoard::StratBoard()
 			blankBoard[3 + 2 * x][2 + 2 * y] = 197;	// all of the 4-way space corners
 		}
 	}
-	for (int x = 0; x < 10; x++) {
+	for (int x = 0; x < 11; x++) {
 		for (int y = 0; y < 10; y++) {
 			blankBoard[2 * x][2 + 2 * y] = 196;		// all of the horizontal space borders
+		}
+	}
+	for (int x = 0; x < 10; x++) {
+		for (int y = 0; y < 11; y++) {
 			blankBoard[1 + 2 * x][1 + 2 * y] = 179; // all of the vertical space borders
 		}
 	}
@@ -292,7 +296,19 @@ void StratBoard::pieceMove(bool player)
 		cin >> finPos[0];
 		cin >> finPos[1];
 
-		isValid = validMove(player,initPos,finPos);
+		// print out boardState for debugging purposes
+		if (initPos[0] == -1) {
+			for(int x = 0; x < 10; x++) {
+				for (int y = 0; y < 10; y++){
+					cout << "[" << boardState[x][y][0] << "," << boardState[x][y][1] << "] ";
+				}
+				cout << endl;
+			}
+			cout << endl;
+			isValid = false;
+		} else {
+			isValid = validMove(player,initPos,finPos);
+		}
 	}
 	// populate the rank variables
 	playerRank = boardState[initPos[0]][initPos[1]][player];
@@ -430,7 +446,9 @@ bool StratBoard::validMove(bool player, int initPos[2], int finPos[2])
 // Battle logic
 bool StratBoard::battle(int playerRank,int oppRank)
 {
-	if(oppRank == 12) {
+	if (oppRank == 0) {
+		return true;
+	} else if(oppRank == 12) {
 		cout << "You found the enemy flag!\n";
 		return true;
 	} else if(oppRank == 11) {
@@ -442,7 +460,7 @@ bool StratBoard::battle(int playerRank,int oppRank)
 	} else if(oppRank == 1 && playerRank == 10) {
 		return true;
 	} else {
-		return (playerRank >= oppRank);
+		return (playerRank <= oppRank);
 	}
 }
 
