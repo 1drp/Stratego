@@ -61,14 +61,16 @@ void newLocal()
 int menu()
 {
 	int choice = 0;
-	cout << "1. New Hotseat Game\n" << "2. New Network Game (Not implemented yet)\n" << "0. Exit\n";
+	cout << "1. New Hotseat Game\n" <<
+			//"2. New Network Game (Not implemented yet)\n" <<
+			"0. Exit\n";
 	cin >> choice;
 
 	switch(choice){
 	case 1:
 		return 1;
-	case 2:
-		return 1; // defaults to hotseat until network game is implemented
+	//case 2:
+	//	return 1; // defaults to hotseat until network game is implemented
 	default:
 		return 0;
 	}

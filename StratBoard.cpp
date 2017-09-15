@@ -281,7 +281,7 @@ void StratBoard::printBoardState(bool player)
 void StratBoard::pieceMove(bool player)
 {
 	bool isValid = false;
-	bool wonStrike = true;
+	bool wonStrike;
 	int initPos[2];
 	int finPos[2];
 	int playerRank = 0;
@@ -331,15 +331,18 @@ void StratBoard::pieceMove(bool player)
 	// check for battle. a "fight" against an empty space will return true.
 	wonStrike = battle(playerRank, opponentRank);
 	if(wonStrike) {
-		// mark opponent piece as captured
 		if(opponentRank != 0) {
+			// mark opponent piece as captured
 			captured[opponentRank][!player]++;
-			cout << "You captured a " << opponentPiece << endl;
+			boardState[finPos[0]][finPos[1]][player] = boardState[finPos[0]][finPos[1]][!player] = 0;
+			if(opponentRank != 12) {
+				cout << "You captured a " << opponentPiece << endl;
+			}
 		}
 		if(!ruleSet[0] && playerRank == opponentRank) {
-			// both  pieces captured in ties under standard rules
+			// player  piece also captured in ties under standard rules
 			captured[playerRank][player]++;
-			boardState[finPos[0]][finPos[1]][player] = boardState[finPos[0]][finPos[1]][!player] = 0;
+			boardState[initPos[0]][initPos[1]][player] = boardState[initPos[0]][initPos[1]][!player] = 0;
 			cout << "You were captured by a " << opponentPiece << " in a tie.\n";
 		} else {
 			// populate new piece position
@@ -347,6 +350,11 @@ void StratBoard::pieceMove(bool player)
 			boardState[finPos[0]][finPos[1]][player] = playerRank;
 			// clear old piece position
 			boardState[initPos[0]][initPos[1]][0] = boardState[initPos[0]][initPos[1]][1] = 0;
+
+			// optional rescue rule
+			if(ruleSet[2] == true && finPos[0] == (!player * 9) && playerRank != 9 && captured[0][player] < 2) {
+				rescue(player);
+			}
 		}
 	} else {
 		// remove player's piece from the board
@@ -356,9 +364,7 @@ void StratBoard::pieceMove(bool player)
 			cout << "You were captured by a " << opponentPiece << endl;
 		}
 	}
-	if(ruleSet[2] == true && finPos[1] == (!player * 9) && playerRank != 9 && captured[0][player] < 2) {
-		rescue(player);
-	}
+
 
 }
 
@@ -366,9 +372,10 @@ void StratBoard::pieceMove(bool player)
 bool StratBoard::validMove(bool player, int initPos[2], int finPos[2])
 {
 	// some local variables that are easier to work with
-	int static checkInit[2] = {boardState[initPos[0]][initPos[1]][player], boardState[initPos[0]][initPos[1]][!player]};
-	int static checkFin[2] = {boardState[finPos[0]][finPos[1]][player], boardState[finPos[0]][finPos[1]][!player]};
-	int static delta[2] = {finPos[0] - initPos[0], finPos[1] - initPos[1]};
+	int const checkInit[2] = {boardState[initPos[0]][initPos[1]][player], boardState[initPos[0]][initPos[1]][!player]};
+	int const checkFin[2] = {boardState[finPos[0]][finPos[1]][player], boardState[finPos[0]][finPos[1]][!player]};
+	int const delta[2] = {finPos[0] - initPos[0], finPos[1] - initPos[1]};
+
 	// check for things that the player cannot move
 	switch(checkInit[0]) {
 	case -2:
@@ -398,7 +405,7 @@ bool StratBoard::validMove(bool player, int initPos[2], int finPos[2])
 	if(delta[0] != 0 && delta[1] != 0) {
 		cout << "Cannot move diagonally.\n";
 		return false;
-	} else if(delta[0] + delta[1] > 1) {
+	} else if(delta[0] + delta[1] > 1 || delta[0] + delta[1] < -1) {
 		if(checkInit[0] != 9) {
 			cout << "Only the scout can move more than one space.\n";
 			return false;
@@ -499,13 +506,16 @@ void StratBoard::rescue(bool player)
 			cout << "Must place on board.\n";
 		} else if((!player && x > 3) || (player && x < 6)) {
 			cout << "Must place on your own side of the board.\n";
-		} else if(boardState[x][y][player != 0]) {
+		} else if(boardState[x][y][player] != 0) {
 			cout << "That spot is not empty.\n";
 		} else {
 			again = false;
 		}
 	}
-
+	//increment the rescue counter and place the rescued piece
+	++captured[0][player];
+	boardState[x][y][player] = choice;
+	boardState[x][y][!player] = -1;
 }
 
 // Pass captured state of flag (rank 12)
